@@ -5,7 +5,7 @@ import static org.aibles.jwtdemo.constants.ApiConstants.REFRESH_TOKEN_URI;
 import static org.aibles.jwtdemo.constants.ApiConstants.USERS_API_URI;
 import static org.aibles.jwtdemo.constants.CommonConstants.START_OF_BEARER_TOKEN;
 import static org.aibles.jwtdemo.constants.CommonConstants.START_POSITION_OF_CONTENT_IN_BEARER_TOKEN;
-import static org.aibles.jwtdemo.filter.AuthorizationFilterExceptionHandle.handle;
+import static org.aibles.jwtdemo.filter.JWTExceptionHandle.handle;
 
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -56,25 +56,20 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             UserDetails userDetails = userService.loadUserByUsername(email);
             if (jwtUtil.validateToken(token, userDetails)) {
               UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                  new UsernamePasswordAuthenticationToken(email, null, userDetails.getAuthorities());
+                  new UsernamePasswordAuthenticationToken(
+                      email, null, userDetails.getAuthorities());
 
               usernamePasswordAuthenticationToken.setDetails(
                   new WebAuthenticationDetailsSource().buildDetails(request));
               SecurityContextHolder.getContext()
                   .setAuthentication(usernamePasswordAuthenticationToken);
-
               filterChain.doFilter(request, response);
-            } else {
-              throw new InvalidOrExpiredToken();
             }
-          } else {
-            throw new InvalidOrExpiredToken();
           }
-        } else {
-          throw new InvalidOrExpiredToken();
         }
       } catch (Exception e) {
-        handle(response, e);
+        InvalidOrExpiredToken exception = new InvalidOrExpiredToken();
+        handle(response, exception);
       }
     }
   }

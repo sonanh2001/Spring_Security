@@ -3,6 +3,8 @@ package org.aibles.jwtdemo.service.impl;
 import static org.aibles.jwtdemo.constants.CommonConstants.START_OF_BEARER_TOKEN;
 import static org.aibles.jwtdemo.constants.CommonConstants.START_POSITION_OF_CONTENT_IN_BEARER_TOKEN;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.aibles.jwtdemo.dto.response.JwtResponse;
 import org.aibles.jwtdemo.entity.RefreshToken;
@@ -41,23 +43,20 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Override
   public JwtResponse generateAccessToken(String authorizationHeader) {
     log.info("(generateAccessToken)header : {}", authorizationHeader);
-    if (authorizationHeader != null && authorizationHeader.startsWith(START_OF_BEARER_TOKEN)) {
-      String refreshToken =
-          authorizationHeader.substring(START_POSITION_OF_CONTENT_IN_BEARER_TOKEN);
-      try {
-      String email = jwtUtil.getEmailFromToken(refreshToken);
-      UserDetails userDetails = userService.loadUserByUsername(email);
+    try {
+      if (authorizationHeader != null && authorizationHeader.startsWith(START_OF_BEARER_TOKEN)) {
+        String refreshToken =
+            authorizationHeader.substring(START_POSITION_OF_CONTENT_IN_BEARER_TOKEN);
+
+        String email = jwtUtil.getEmailFromToken(refreshToken);
+        UserDetails userDetails = userService.loadUserByUsername(email);
         if (jwtUtil.validateToken(refreshToken, userDetails)) {
           return new JwtResponse(refreshToken, jwtUtil.generateAccessToken(userDetails));
-        } else {
-          throw new InvalidOrExpiredToken();
         }
-      } catch (Exception e) {
-        log.error("(generateAccessToken)exception : {}", e.getClass().getName());
-        throw new InvalidOrExpiredToken();
       }
-    } else {
+    } catch (Exception e) {
       throw new InvalidOrExpiredToken();
     }
+    return new JwtResponse();
   }
 }

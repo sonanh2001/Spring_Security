@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 public class InvalidOrExpiredToken extends BaseException{
 
   public InvalidOrExpiredToken() {
-    setStatus(HttpStatus.FORBIDDEN.value());
+    super();
     setCode("org.aibles.jwtdemo.exception.InvalidOrExpiredToken");
+    setStatus(HttpStatus.UNAUTHORIZED.value());
   }
 }
